@@ -1,0 +1,10 @@
+{
+    "env": {
+        "DB_USER": "amel10",
+        "DB_PASSWORD": "VPHzD7ePnxbGvDN9",
+        "DB_NAME": "mern",
+        "JWT_KEY": "supersecret_dont_share",
+        "GOOGLE_API_KEY": "nisam_radio"
+
+    }
+}

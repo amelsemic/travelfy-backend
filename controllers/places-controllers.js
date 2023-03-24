@@ -60,7 +60,6 @@ const createPlace = async (req, res, next) => {
   
   const { title, description, address} = req.body;
 
-  console.log(req.userData.userId)
 
   const createdPlace = new Place({    //moongoose schema Place preko koje uploadamo nase Places
     title,

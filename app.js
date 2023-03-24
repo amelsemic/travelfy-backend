@@ -13,7 +13,6 @@ app.use(bodyParser.json()); /* bodyParsanje uvijek na prvom mjestu */
 
 
 app.use('/uploads/images', express.static(path.join('uploads', 'images')))
-app.use(express.static(path.join('public')))
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -29,17 +28,13 @@ app.use("/api/places", placesRoutes);
 app.use("/api/users", usersRoutes); /* hendlanje razlicitih  endpoint-a*/
 
 
+
+
+/* kupi requestove sa undefined routes */
 app.use((req, res, next) => {
-  res.sendFile(path.resolve(__dirname, 'public', 'index.html'))
-});
-
-/* kupi requestove sa undefined routes........EDIT: ovo vise nije potrebno jer hendlamo sve requestove sa ovom linijom koda iznad! */
-
-/* app.use((req, res, next) => {
   const error = new HttpError("Coulnd not find this route", 404);
   throw error;
-}); */
-
+});
 
 /* kupi errore koji su throw-ani iz requestova */
 app.use((error, req, res, next) => {
@@ -65,7 +60,7 @@ mongoose
     `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.cnozerd.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`
   ) //mern ubaceno
   .then(() => {
-    app.listen(process.env.PORT || 5000);
+    app.listen(5000);
     console.log("connected to database!!");
   })
   .catch((err) => {

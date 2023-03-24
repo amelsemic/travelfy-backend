@@ -64,17 +64,20 @@ const signUp = async (req, res, next) => {
     return next(error);
   }
 
+
+
   let token;
   try {
-    token = jwt.sign(
+     token = jwt.sign(
       { userId: createdUser.id, email: createdUser.email },
       process.env.JWT_KEY, //private_key
-      { expriresIn: "1h" } // extra_security mechanism, optional
+      { expiresIn: "1h" } // extra_security mechanism, optional
     ); //returns a string - token
+
   } catch (err) {
     const error = new HttpError("Signing up failed, please try again", 500);
+    return next(error);
   }
-
 
   res
     .status(201)
@@ -122,6 +125,7 @@ const logIn = async (req, res, next) => {
   } catch (err) {
     const error = new HttpError("Logging in failed, please try again", 500);
   }
+
 
   res.json({
     userId: existingUser.id,

@@ -5,8 +5,16 @@ const getCoordsForAdress = require("../utils/location");
 const Place = require("../models/place");
 const User = require("../models/user");
 const mongoose = require("mongoose");
-const { use } = require("../routes/places-routes");
-const fs = require('fs')
+/* const { use } = require("../routes/places-routes"); */
+const fs = require("fs");
+
+//BLOB pokusaj sa chatGPT
+const { BlobServiceClient } = require("@azure/storage-blob");
+
+const blobServiceClient = BlobServiceClient.fromConnectionString(
+  "DefaultEndpointsProtocol=https;AccountName=mern;AccountKey=YRExv5+8pC0ugGh97UttFdIZ+8qpS7hIE//+/hzgn6VadpT9sjo/r5yKmz7mf65RWpBOvNuyMgwz+AStlgO1rg==;EndpointSuffix=core.windows.net"
+);
+const containerClient = blobServiceClient.getContainerClient("mern");
 
 const getPlacesByUserID = async (req, res, next) => {
   const userId = req.params.uid;
@@ -55,19 +63,33 @@ const createPlace = async (req, res, next) => {
   if (!errors.isEmpty()) {
     throw new HttpError("Invalid inputs passed, please check your data!");
   }
-  
+
   const coordinates = getCoordsForAdress(); /* dummy version */
-  
-  const { title, description, address} = req.body;
 
+  const { title, description, address } = req.body;
 
-  const createdPlace = new Place({    //moongoose schema Place preko koje uploadamo nase Places
+  //step4 sa GPT
+  const path = req.file.path;
+
+  const blockBlobClient = containerClient.getBlockBlobClient(
+    title + path.slice(15, 30) + ".jpg"
+  );
+
+  const data = fs.readFileSync(path);
+  const buffer = Buffer.from(data);
+
+  const uploadBlobResponse = await blockBlobClient.upload(data, data.length);
+
+  //kraj
+
+  const createdPlace = new Place({
+    //moongoose schema Place preko koje uploadamo nase Places
     title,
     description,
     address,
     location: coordinates,
-    image: req.file.path,   //image moramo na ovaj nacin
-    creator: req.userData.userId
+    image: blockBlobClient.url,
+    creator: req.userData.userId,
   });
 
   let user;
@@ -98,12 +120,11 @@ const createPlace = async (req, res, next) => {
   }
 
   res.status(201).json({ place: createdPlace });
-
 };
 
 const updatePlaceByID = async (req, res, next) => {
   const errors = validationResult(req);
-  
+
   if (!errors.isEmpty()) {
     return next(
       new HttpError("Invalid inputs passed, please check your data!")
@@ -121,10 +142,11 @@ const updatePlaceByID = async (req, res, next) => {
     return next(error);
   }
 
-  if(place.creator.toString() !== req.userData.userId){ //da li je ovaj user napravio ovaj place
+  if (place.creator.toString() !== req.userData.userId) {
+    //da li je ovaj user napravio ovaj place
 
-    const error = new HttpError('You are not allowed to edit this place!', 401)
-    return next(error)
+    const error = new HttpError("You are not allowed to edit this place!", 401);
+    return next(error);
   }
 
   place.title = title;
@@ -145,7 +167,7 @@ const deletePlace = async (req, res, next) => {
 
   let place;
   try {
-    place = await Place.findById(placeID).populate("creator"); 
+    place = await Place.findById(placeID).populate("creator");
   } catch (err) {
     const error = new HttpError("Smthng went wrong, couldnt delete place", 500);
     return next(error);
@@ -157,9 +179,12 @@ const deletePlace = async (req, res, next) => {
   }
 
   //ovdje cemo koristiti place.creator.id jer kod delete place imamo citav user objekat, nije kao kod update place => pogledati pocetak lekcije 187
-  if(place.creator.id !== req.userData.userId){
-    const error = new HttpError('You are not allowed to delete this place!', 401)
-    return next(error)
+  if (place.creator.id !== req.userData.userId) {
+    const error = new HttpError(
+      "You are not allowed to delete this place!",
+      401
+    );
+    return next(error);
   }
 
   const imagePath = place.image;
@@ -174,14 +199,14 @@ const deletePlace = async (req, res, next) => {
     await place.creator.save({ session: session });
 
     await session.commitTransaction();
-    console.log('Deleting place')
+    console.log("Deleting place");
   } catch (err) {
     const error = new HttpError("Smthng went wrong, couldnt delete place", 500);
     return next(error);
   }
 
   //brisanje slike nakon brisanja mjesta
-  fs.unlink(imagePath, err=> (console.log(err)))
+  fs.unlink(imagePath, (err) => console.log(err));
 
   res.status(200).json({ message: "Place deleted." });
 };

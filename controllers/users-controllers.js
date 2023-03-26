@@ -3,6 +3,14 @@ const { validationResult } = require("express-validator");
 const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const fs = require("fs");
+
+//BLOB pokusaj sa chatGPT
+const { BlobServiceClient } = require("@azure/storage-blob");
+const blobServiceClient = BlobServiceClient.fromConnectionString(
+  "DefaultEndpointsProtocol=https;AccountName=mern;AccountKey=YRExv5+8pC0ugGh97UttFdIZ+8qpS7hIE//+/hzgn6VadpT9sjo/r5yKmz7mf65RWpBOvNuyMgwz+AStlgO1rg==;EndpointSuffix=core.windows.net"
+);
+const containerClient = blobServiceClient.getContainerClient("mern");
 
 const getUsers = async (req, res, next) => {
   let users;
@@ -49,10 +57,23 @@ const signUp = async (req, res, next) => {
     return next(error);
   }
 
+  //step4 sa GPT
+
+  const path = req.file.path;
+  const blockBlobClient = containerClient.getBlockBlobClient(
+    name + path.slice(15, 30) + ".jpg"
+  );
+
+  const data = fs.readFileSync(path);
+  const buffer = Buffer.from(data);
+
+  const uploadBlobResponse = await blockBlobClient.upload(data, data.length);
+  //kraj
+
   const createdUser = new User({
     name,
     email,
-    image: req.file.path,
+    image: blockBlobClient.url,
     password: hashedPassword,
     places: [],
   });
@@ -64,16 +85,13 @@ const signUp = async (req, res, next) => {
     return next(error);
   }
 
-
-
   let token;
   try {
-     token = jwt.sign(
+    token = jwt.sign(
       { userId: createdUser.id, email: createdUser.email },
       process.env.JWT_KEY, //private_key
       { expiresIn: "1h" } // extra_security mechanism, optional
     ); //returns a string - token
-
   } catch (err) {
     const error = new HttpError("Signing up failed, please try again", 500);
     return next(error);
@@ -125,7 +143,6 @@ const logIn = async (req, res, next) => {
   } catch (err) {
     const error = new HttpError("Logging in failed, please try again", 500);
   }
-
 
   res.json({
     userId: existingUser.id,

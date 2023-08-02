@@ -54,15 +54,20 @@ app.use((error, req, res, next) => {
     .json({ message: error.message || "An unknown error occured..." }); //ono sto cemo dobiti kao data = await res.json
 });
 
+
+console.log("env varijable===>",process.env.DB_USER)
+
 mongoose.set("strictQuery", false);
 mongoose
   .connect(
     `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.cnozerd.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`
   ) //mern ubaceno
+
   .then(() => {
     app.listen(process.env.PORT ||  5000);
     console.log("connected to database!!");
   })
   .catch((err) => {
     console.log(err);
+    console.log("connection failed!!!")
   });

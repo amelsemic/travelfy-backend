@@ -5,12 +5,24 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
 
+//DigitalOcean pokusaj sa chatGPT
+const AWS = require('aws-sdk');
+
+// Set up the AWS SDK with your Spaces access keys
+const spacesEndpoint = new AWS.Endpoint('fra1.digitaloceanspaces.com');
+const s3 = new AWS.S3({
+  endpoint: spacesEndpoint,
+  accessKeyId: 'DO00QQR9Z3XWJ7CDJ67J',
+  secretAccessKey: 'czENNVSTkgsVDEzK5mRpkUnTd3vPtNRQTwc2JzR0v34',
+});
+
+
 //BLOB pokusaj sa chatGPT
-const { BlobServiceClient } = require("@azure/storage-blob");
+/* const { BlobServiceClient } = require("@azure/storage-blob");
 const blobServiceClient = BlobServiceClient.fromConnectionString(
   "DefaultEndpointsProtocol=https;AccountName=mern;AccountKey=YRExv5+8pC0ugGh97UttFdIZ+8qpS7hIE//+/hzgn6VadpT9sjo/r5yKmz7mf65RWpBOvNuyMgwz+AStlgO1rg==;EndpointSuffix=core.windows.net"
 );
-const containerClient = blobServiceClient.getContainerClient("mern");
+const containerClient = blobServiceClient.getContainerClient("mern"); */
 
 const getUsers = async (req, res, next) => {
   let users;
@@ -59,7 +71,7 @@ const signUp = async (req, res, next) => {
 
   //step4 sa GPT
 
-  const path = req.file.path;
+/*   const path = req.file.path;
   const blockBlobClient = containerClient.getBlockBlobClient(
     name + path.slice(15, 30) + ".jpg"
   );
@@ -67,13 +79,36 @@ const signUp = async (req, res, next) => {
   const data = fs.readFileSync(path);
   const buffer = Buffer.from(data);
 
-  const uploadBlobResponse = await blockBlobClient.upload(data, data.length);
+  const uploadBlobResponse = await blockBlobClient.upload(data, data.length); */
+
+  //kraj
+
+
+  //DigitalOcean
+
+  const { filename, path } = req.file;
+
+  console.log("originalname:", req.file)
+  const uploadParams = {
+    Bucket: 'myfirstspaceamel',
+    Key: filename,
+    Body: fs.createReadStream(path),
+    ACL: 'public-read', // Set the access control level as 'public-read' to make the image publicly accessible
+  };
+
+  try{
+    await s3.upload(uploadParams).promise();
+  } catch(err){
+    const error = new HttpError("Failed to upload image", 500);
+    return next(err);
+  }
+
   //kraj
 
   const createdUser = new User({
     name,
     email,
-    image: blockBlobClient.url,
+    image: `https://myfirstspaceamel.fra1.cdn.digitaloceanspaces.com/${req.file.filename}`,
     password: hashedPassword,
     places: [],
   });

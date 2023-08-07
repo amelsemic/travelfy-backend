@@ -54,9 +54,6 @@ app.use((error, req, res, next) => {
     .json({ message: error.message || "An unknown error occured..." }); //ono sto cemo dobiti kao data = await res.json
 });
 
-
-console.log("env varijable===>",process.env.DB_USER)
-
 mongoose.set("strictQuery", false);
 mongoose
   .connect(

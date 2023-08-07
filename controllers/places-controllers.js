@@ -79,9 +79,10 @@ const createPlace = async (req, res, next) => {
     throw new HttpError("Invalid inputs passed, please check your data!");
   }
 
-  const coordinates = getCoordsForAdress(); /* dummy version */
+  /* dummy version */
+  const coordinates = getCoordsForAdress(); 
 
-  const { title, description, address } = req.body;
+  const { title, description, address, coords } = req.body;
 
   //DigitalOcean
 
@@ -124,7 +125,7 @@ const createPlace = async (req, res, next) => {
     title,
     description,
     address,
-    location: coordinates,
+    location: JSON.parse(coords),
     image: `https://myfirstspaceamel.fra1.cdn.digitaloceanspaces.com/${req.file.filename}`,
     creator: req.userData.userId,
   });
@@ -236,7 +237,6 @@ const deletePlace = async (req, res, next) => {
     await place.creator.save({ session: session });
 
     await session.commitTransaction();
-    console.log("Deleting place");
   } catch (err) {
     const error = new HttpError("Smthng went wrong, couldnt delete place", 500);
     return next(error);

@@ -90,21 +90,6 @@ const createPlace = async (req, res, next) => {
   //kraj
 
 
-
-  //step4 sa GPT
-/*   const path = req.file.path;
-
-  const blockBlobClient = containerClient.getBlockBlobClient(
-    title + path.slice(15, 30) + ".jpg"
-  );
-
-  const data = fs.readFileSync(path);
-  const buffer = Buffer.from(data);
-
-  const uploadBlobResponse = await blockBlobClient.upload(data, data.length); */
-  //kraj
-
-
   const createdPlace = new Place({
     //moongoose schema Place preko koje uploadamo nase Places
     title,

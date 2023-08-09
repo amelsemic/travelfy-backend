@@ -4,7 +4,9 @@
         "DB_PASSWORD": "o45SrOXmODKIuilI",
         "DB_NAME": "mern-prod2",
         "JWT_KEY": "supersecret_dont_share",
-        "GOOGLE_API_KEY": "nisam_radio"
+        "GOOGLE_API_KEY": "nisam_radio",
+        "ACCESS_KEY_AWS": "DO00QQR9Z3XWJ7CDJ67J",
+        "SECRET_ACCESS_KEY": "czENNVSTkgsVDEzK5mRpkUnTd3vPtNRQTwc2JzR0v34"
 
     }
 }

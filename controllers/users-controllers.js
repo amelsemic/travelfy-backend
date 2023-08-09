@@ -123,7 +123,9 @@ const logIn = async (req, res, next) => {
     return next(error);
   }
 
+  console.log("prije nepostojeceg usera")
   if (!existingUser) {
+    console.log("ne postoji user")
     return next(
       new HttpError("Invalid credentials, could not log you in...", 403)
     );

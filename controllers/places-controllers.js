@@ -1,11 +1,9 @@
 const HttpError = require("../models/http-error");
 const { v4: uuidv4 } = require("uuid");
 const { validationResult } = require("express-validator");
-const getCoordsForAdress = require("../utils/location");
 const Place = require("../models/place");
 const User = require("../models/user");
 const mongoose = require("mongoose");
-/* const { use } = require("../routes/places-routes"); */
 const fs = require("fs");
 
 //DigitalOcean pokusaj sa chatGPT
@@ -15,20 +13,9 @@ const AWS = require('aws-sdk');
 const spacesEndpoint = new AWS.Endpoint('fra1.digitaloceanspaces.com');
 const s3 = new AWS.S3({
   endpoint: spacesEndpoint,
-  accessKeyId: 'DO00QQR9Z3XWJ7CDJ67J',
-  secretAccessKey: 'czENNVSTkgsVDEzK5mRpkUnTd3vPtNRQTwc2JzR0v34',
+  accessKeyId: process.env.ACCESS_KEY_AWS,
+  secretAccessKey: process.env.SECRET_ACCESS_KEY,
 });
-
-
-
-//BLOB pokusaj sa chatGPT
-/* const { BlobServiceClient } = require("@azure/storage-blob");
-
-const blobServiceClient = BlobServiceClient.fromConnectionString(
-  "DefaultEndpointsProtocol=https;AccountName=mern;AccountKey=YRExv5+8pC0ugGh97UttFdIZ+8qpS7hIE//+/hzgn6VadpT9sjo/r5yKmz7mf65RWpBOvNuyMgwz+AStlgO1rg==;EndpointSuffix=core.windows.net"
-);
-const containerClient = blobServiceClient.getContainerClient("mern");
- */
 
 
 const getPlacesByUserID = async (req, res, next) => {
@@ -79,8 +66,6 @@ const createPlace = async (req, res, next) => {
     throw new HttpError("Invalid inputs passed, please check your data!");
   }
 
-  /* dummy version */
-  const coordinates = getCoordsForAdress(); 
 
   const { title, description, address, coords } = req.body;
 
